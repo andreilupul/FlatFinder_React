@@ -90,9 +90,10 @@ function Home() {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    // filter: 'blur(0px)', // Efectul de blur
+        
                     zIndex: -1, // Asigură că imaginea este în spate
                     opacity: 0.95, // Aplica un nivel de transparență
+                    
                 }}
             />
 

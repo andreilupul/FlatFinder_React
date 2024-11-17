@@ -3,31 +3,29 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
 import { Button, Typography, AppBar, Toolbar } from '@mui/material';
 import Logout from './Logout';
-import HomeIcon from "@mui/icons-material/Home";
 
 
-// autentificare, informații cheie despre utilizatorul curent:
-// obiectul currentUser, starea de autentificare userLoggedIn, și dacă acesta este administrator isAdmin. 
-//Aceste informații sunt folosite ulterior în componentă pentru a personaliza interfața 
+
 function Header() {
     const { currentUser, userLoggedIn, isAdmin } = useAuth();
 
     return (
-        <AppBar position="static"
-
-            sx={{
-                backgroundColor: 'transparent', // Navbar transparent
-                boxShadow: 'none'
-            }}
-        >
+        <AppBar
+        position="static"
+        sx={{
+          backgroundColor: 'transparent',  
+          boxShadow: 'none',               
+          backdropFilter: 'blur(10px)',    
+          WebkitBackdropFilter: 'blur(10px)', 
+        }}
+      >
 
             <Toolbar>
                 {userLoggedIn && (
 
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'black', display: 'flex', alignItems: 'center' }}>
                         FlatFinder Welcome
-                        <HomeIcon sx={{ marginLeft: 1 }} /> {/* Add the Home icon with some left margin */}
-                        , {currentUser.email}  {isAdmin && <span style={{ color: 'red' }}>(Admin)</span>}
+                        {} {currentUser.email}  {isAdmin && <span style={{ color: 'red' }}>(Admin)</span>}
                     </Typography>
 
                 )}
