@@ -48,7 +48,7 @@ function Login() {
     };
 
     return (
-        <div className='test'>
+        <div className='loginBackgroung'>
 
             <Box
                 sx={{

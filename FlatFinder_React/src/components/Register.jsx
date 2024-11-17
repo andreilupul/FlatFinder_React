@@ -116,7 +116,7 @@ function Register() {
 
 
     return (
-        <div className='test1'>
+        <div className='registerBackgroung'>
             <Box
                 sx={{
                     position: 'absolute',

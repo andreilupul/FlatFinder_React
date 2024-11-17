@@ -7,12 +7,21 @@ html {
     background-position: center; /* Centrează imaginea pe pagină */
 }
 
-.test {
+.loginBackgroung {
     background-image: url('./assets/ny1.jpg');
     min-height: 100vh;
     height: auto;
     background-repeat: no-repeat; /* Dezactivează repetarea imaginii */
   background-size: cover; /* Redimensionează imaginea pentru a acoperi întreaga pagină */
   background-position: center; /* Centrează imaginea pe pagină */
+}
+
+.registerBackgroung {
+  background-image: url('./assets/ny1.jpg');
+  min-height: 100vh;
+  height: auto;
+  background-repeat: no-repeat; /* Dezactivează repetarea imaginii */
+background-size: cover; /* Redimensionează imaginea pentru a acoperi întreaga pagină */
+background-position: center; /* Centrează imaginea pe pagină */
 }
 
