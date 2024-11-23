@@ -2,26 +2,26 @@ body,
 html {
     margin: 0;
     height: 100vh;
-    background-repeat: no-repeat; /* Dezactivează repetarea imaginii */
-    background-size: cover; /* Redimensionează imaginea pentru a acoperi întreaga pagină */
-    background-position: center; /* Centrează imaginea pe pagină */
+    background-repeat: no-repeat; 
+    background-size: cover; 
+    background-position: center; 
 }
 
 .loginBackgroung {
     background-image: url('./assets/ny1.jpg');
     min-height: 100vh;
     height: auto;
-    background-repeat: no-repeat; /* Dezactivează repetarea imaginii */
-  background-size: cover; /* Redimensionează imaginea pentru a acoperi întreaga pagină */
-  background-position: center; /* Centrează imaginea pe pagină */
+    background-repeat: no-repeat; 
+    background-size: cover; 
+    background-position: center; 
 }
 
 .registerBackgroung {
   background-image: url('./assets/ny1.jpg');
   min-height: 100vh;
   height: auto;
-  background-repeat: no-repeat; /* Dezactivează repetarea imaginii */
-background-size: cover; /* Redimensionează imaginea pentru a acoperi întreaga pagină */
-background-position: center; /* Centrează imaginea pe pagină */
+  background-repeat: no-repeat; 
+  background-size: cover; 
+  background-position: center; 
 }
 
