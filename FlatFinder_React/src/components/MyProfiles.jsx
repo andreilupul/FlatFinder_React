@@ -16,11 +16,8 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/authContext';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { updatePassword as firebaseUpdatePassword } from 'firebase/auth';
-import { db } from '../firebase';
+import axios from 'axios'; // Axios for API calls
 import backgroundImage from '../assets/ny1.jpg';
-
 
 const MyProfiles = () => {
     const { currentUser } = useAuth();
@@ -39,13 +36,8 @@ const MyProfiles = () => {
     const fetchUserData = useCallback(async () => {
         if (currentUser) {
             try {
-                const userDoc = doc(db, 'users', currentUser.uid);
-                const userSnapshot = await getDoc(userDoc);
-                if (userSnapshot.exists()) {
-                    setUserData(userSnapshot.data());
-                } else {
-                    console.error("User document not found");
-                }
+                const response = await axios.get(`/api/users/${currentUser.uid}`);
+                setUserData(response.data);
             } catch (error) {
                 console.error("Error fetching user data:", error);
             }
@@ -55,14 +47,8 @@ const MyProfiles = () => {
     const checkIfAdmin = useCallback(async () => {
         if (currentUser) {
             try {
-                const userDoc = doc(db, 'users', currentUser.uid);
-                const userSnapshot = await getDoc(userDoc);
-                const userData = userSnapshot.data();
-                if (userData) {
-                    setIsAdmin(userData.isAdmin || false);
-                } else {
-                    console.error("Admin check failed: User data not found");
-                }
+                const response = await axios.get(`/api/users/${currentUser.uid}`);
+                setIsAdmin(response.data.isAdmin || false);
             } catch (error) {
                 console.error("Error checking admin status:", error);
             }
@@ -99,18 +85,17 @@ const MyProfiles = () => {
             ...editData,
             [e.target.name]: e.target.value
         });
-
     };
 
     const handleUpdate = async () => {
         try {
-            const userDoc = doc(db, 'users', currentUser.uid);
-            await updateDoc(userDoc, editData);
+            // Update user data
+            await axios.put(`/api/users/${currentUser.uid}`, editData);
             setUserData(editData);
 
-            // Modificarea parolei, dacă a fost introdusă una nouă
+            // Update password if provided
             if (password) {
-                await firebaseUpdatePassword(currentUser, password);
+                await axios.put(`/api/users/${currentUser.uid}/password`, { password });
                 alert('Parola a fost actualizată cu succes.');
             }
 
@@ -131,11 +116,11 @@ const MyProfiles = () => {
 
     const handleDelete = async () => {
         try {
-            const userDocRef = doc(db, 'users', currentUser.uid);
-            await deleteDoc(userDocRef);
-            alert('Contul a fost șters cu succes din Firestore.');
+            // Delete user from MongoDB
+            await axios.delete(`/api/users/${currentUser.uid}`);
+            alert('Contul a fost șters cu succes.');
             handleCloseDeleteConfirm();
-            // Aici puteți adăuga logica pentru deconectare sau redirecționare
+            // Additional logic for logout or redirection
         } catch (error) {
             console.error('Error deleting user:', error);
             alert('A apărut o eroare la ștergerea utilizatorului.');
@@ -153,24 +138,17 @@ const MyProfiles = () => {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    zIndex: -1, //  se asigură că imaginea este în spate
-                    opacity: 0.95, //  se aplica un nivel de transparență
+                    zIndex: -1, 
+                    opacity: 0.95, 
                 }}
             />
             <Header />
             <Grid container justifyContent="center" alignItems="center" style={{ minHeight: '80vh' }}>
                 <Grid item xs={12} sm={8} md={6}>
-                    <Card
-                        sx={{
-
-                            backgroundColor: 'rgba(222, 235, 250,0.7)',
-                        }}>
-                        <CardContent
-                        >
+                    <Card sx={{ backgroundColor: 'rgba(222, 235, 250,0.7)' }}>
+                        <CardContent>
                             <Typography variant="h5" align="center" gutterBottom
-                                sx={{
-                                    backgroundColor: 'rgba(255, 255, 255, 1)',
-                                }}>
+                                sx={{ backgroundColor: 'rgba(255, 255, 255, 1)' }}>
                                 Profil
                             </Typography>
                             <Grid container spacing={2}>
@@ -286,4 +264,3 @@ const MyProfiles = () => {
 };
 
 export default MyProfiles;
-

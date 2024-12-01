@@ -1,55 +1,55 @@
 import React, { useState } from 'react';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
-import { doSignInWithEmailAndPassword } from '../auth';
+import axios from 'axios'; // You can use axios or fetch
 import backgroundImage from '../assets/ny4.jpg';
 
-
 function Login() {
-
-    // definim trei stări (email, password, error) folosind useState pentru a
-    //  gestiona valorile emailului, parolei și mesajele de eroare.
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState(""); // Mesajul de eroare
-    // useNavigate este un hook din react-router-dom care permite redirecționarea între pagini.
+    const [error, setError] = useState(""); // Error message
     const navigate = useNavigate();
 
-    // funcția principală care  autentifica utilizatorul.
+    // Handle user login
     const handleLogin = async () => {
-
         try {
-            setError(""); // Resetează mesajul de eroare înainte de a încerca autentificarea
-            // doSignInWithEmailAndPassword (legată de Firebase) este apelată pentru a face autentificarea.
-            await doSignInWithEmailAndPassword(email, password);
-            navigate('/'); // Redirecționează la pagina principală,daca autentificarea are succes
+            setError(""); // Reset the error before attempting login
 
-            //Dacă autentificarea eșuează ,codul analizează tipul erorii și actualizează starea error cu mesajul corespunzător.
+            // Making a POST request to your backend API for login
+            const response = await axios.post('http://localhost:5000/api/users/login', {
+                email,
+                password
+            });
+
+            // Assuming your backend returns user data upon successful login
+            const user = response.data;
+            if (user) {
+                navigate('/'); // Redirect to the home page if login is successful
+            }
         } catch (error) {
             console.error("Login failed:", error);
-
-            // Gestionarea erorilor de autentificare
-            if (error.code === "auth/user-not-found") {
-                setError("Emailul introdus nu există.");
-            } else if (error.code === "auth/invalid-email") {
-                setError("Emailul introdus este invalid.");
-            } else if (error.code === "auth/wrong-password") {
-                setError("Parola introdusă este incorectă.");
+            
+            // Handle errors based on the response from the backend
+            if (error.response) {
+                if (error.response.status === 400) {
+                    setError("Invalid credentials");
+                } else {
+                    setError("An error occurred. Please try again.");
+                }
             } else {
-                setError("A apărut o eroare. Te rugăm să încerci din nou.");
+                setError("Network error. Please check your connection.");
             }
         }
     };
-    // Functia handleEmailChange: Când utilizatorul modifica emailul, valoarea emailului
-    // este actualizată, iar mesajul de eroare este resetat
+
+    // Update email state and reset error when the email changes
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
-        setError(""); // Resetează mesajul de eroare la modificarea emailului
+        setError(""); // Reset error message when email changes
     };
 
     return (
         <div className='loginBackgroung'>
-
             <Box
                 sx={{
                     display: 'flex',
@@ -57,13 +57,9 @@ function Login() {
                     alignItems: 'center',
                     minHeight: '100vh',
                     zIndex: -1,
-
                 }}
             >
-
                 <Box sx={{
-
-
                     maxWidth: 300,
                     border: '2px solid black',
                     padding: 3,
@@ -80,11 +76,11 @@ function Login() {
                         id="email"
                         label="Email"
                         value={email}
-                        onChange={handleEmailChange} // Folosește funcția modificată pentru a reseta eroarea
+                        onChange={handleEmailChange} // Reset error on change
                         fullWidth
                         sx={{ marginBottom: 2 }}
-                        error={!!error} // Marchează câmpul ca având o eroare dacă există un mesaj de eroare
-                        helperText={error} // Afișează mesajul de eroare sub câmpul de input
+                        error={!!error} // Mark field as having an error if there is an error message
+                        helperText={error} // Display error message under the input field
                     />
 
                     <TextField
@@ -111,16 +107,12 @@ function Login() {
                         justifyContent: 'center',
                         alignItems: 'center'
                     }} >
-                        Not have an acount , <Link to="/register">Register</Link>
+                        Don't have an account? <Link to="/register">Register</Link>
                     </Typography>
                 </Box>
             </Box>
-
-
-
         </div>
     );
 }
-
 
 export default Login;

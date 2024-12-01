@@ -1,10 +1,10 @@
+//AddFlats.jsx
 import React, { useState } from 'react';
 import {
     TextField, Button, Container, Table, TableBody, TableCell,
     TableContainer, TableRow, ToggleButton, ToggleButtonGroup
 } from '@mui/material';
-import { db } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
 
@@ -28,7 +28,6 @@ function AddFlat() {
     // Stări pentru gestionarea erorilor de validare (errors), validitatea
     //  formularului (isFormValid) și dacă formularul a fost trimis (isSubmitted)
     const [errors, setErrors] = useState({});
-    const [isFormValid, setIsFormValid] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
 
     // Hook-ul useNavigate permite redirecționarea între 
@@ -90,34 +89,41 @@ function AddFlat() {
 
     // handleSubmit: Funcția de trimitere a formularului.
     const handleSubmit = async (e) => {
-
-        // Se previne comportamentul implicit al formularului. 
-        // Formularul nu se mai trimite automat, astfel încât validarea și alte operațiuni pot fi efectuate
         e.preventDefault();
 
-        // Se validează toate câmpurile. Dacă sunt valide, formularul
-        //  este marcat ca fiind valid și datele sunt trimise la baza de date (flats).
+        // Se validează câmpurile
         setIsSubmitted(true);
         if (validate()) {
             setIsFormValid(true);
+    
             try {
                 if (currentUser) {
-                    const flatData1 = { ...flatData, ownerUid: currentUser.uid }
-
-                    const flatsCollection = collection(db, 'flats');
-                    await addDoc(flatsCollection, flatData1);
+                    // Adăugăm userId-ul din context
+                    const flatDataToSend = { ...flatData, ownerUid: currentUser.uid };
+    
+                    // Trimiterea datelor către backend-ul nostru
+                    const response = await fetch('http://localhost:5000/api/flats', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(flatDataToSend),
+                    });
+    
+                    if (response.ok) {
+                        // Dacă cererea a fost un succes, redirecționează utilizatorul
+                        navigate('/all-flats');
+                    } else {
+                        throw new Error('Failed to add flat');
+                    }
                 }
-                // Dacă datele sunt trimise cu succes, utilizatorul este redirecționat către pagina /all-flats  
-                navigate('/all-flats');
-
-                // În caz de eroare la adăugarea datelor, se afișează eroarea în consolă   
             } catch (error) {
                 console.error("Error adding flat: ", error);
             }
         } else {
             setIsFormValid(false);
         }
-    };
+    }
 
     return (
         <Container sx={{ maxWidth: '100%', padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'start', minHeight: 'autoHeight' }}>

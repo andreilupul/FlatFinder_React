@@ -5,73 +5,59 @@ import {
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { Delete } from '@mui/icons-material';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase';
+import axios from 'axios';  // Use axios to make HTTP requests
 import Header from './Header';
 import backgroundImage from '../assets/ny1.jpg';
 import { Link } from "react-router-dom";
 
-
-
 function AllUsers() {
-    const [users, setUsers] = useState([]);// stochează lista de utilizatori aduși din baza de date.
-    const [open, setOpen] = useState(false); // controlează deschiderea/închiderea unui modal
-    const [selectedUserId, setSelectedUserId] = useState(null);  //stochează ID-ul utilizatorului selectat pentru ștergere
-    const [activeButton, setActiveButton] = useState(location.pathname);   //gestionează butonul activ pe baza rutei curente (location.pathname).
+    const [users, setUsers] = useState([]);  // Stores the list of users fetched from the database
+    const [open, setOpen] = useState(false);  // Controls modal open/close state
+    const [selectedUserId, setSelectedUserId] = useState(null);  // Stores the ID of the selected user for deletion
+    const [activeButton, setActiveButton] = useState(location.pathname); // Manages active button based on the current route
 
-
-    // Folosim useEffect pentru a aduce utilizatorii din baza de date atunci când componenta este montată 
+    // Fetch users from MongoDB on component mount
     useEffect(() => {
-
-        // fetchUsers: aduce documentele din colecția users din baza de date Firestore,
-        //  le transformă într-o listă și le stochează în starea users.
         const fetchUsers = async () => {
             try {
-                const usersCollection = collection(db, 'users');
-                const usersSnapshot = await getDocs(usersCollection);
-                const usersList = usersSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                setUsers(usersList);
+                // Fetch users from your backend API
+                const response = await axios.get('http://localhost:5000/api/users');
+                setUsers(response.data);  // Update the state with the fetched users
             } catch (error) {
                 console.error('Error fetching users:', error);
             }
         };
 
         fetchUsers();
-    }, []);
+    }, []);  // Empty dependency array means this will run only once when the component is mounted
 
-
-    // Funcția de ștergere a utilizatorului selectat
+    // Handle deleting a user from MongoDB
     const handleDeleteUser = async () => {
         try {
-            if (selectedUserId) {    //Verifică dacă selectedUserId este definit
-
-                // Șterge utilizatorul din baza de date și actualizează lista de
-                //  utilizatori din starea locală pentru a reflecta ștergerea   
-                await deleteDoc(doc(db, 'users', selectedUserId));
-                setUsers(users.filter(user => user.id !== selectedUserId));
+            if (selectedUserId) {
+                // Send DELETE request to the backend to delete the user
+                await axios.delete(`http://localhost:5000/api/users/${selectedUserId}`);
+                setUsers(users.filter(user => user.id !== selectedUserId));  // Update the state after deletion
                 console.log('User deleted successfully');
             }
-            setOpen(false);
+            setOpen(false);  // Close the modal
         } catch (error) {
             console.error('Error deleting user:', error);
         }
     };
 
-    // Deschide modalul pentru confirmarea ștergerii unui utilizator și setează ID-ul utilizatorului selectat
+    // Open the modal for confirming the deletion
     const handleOpenModal = (userId) => {
         setSelectedUserId(userId);
         setOpen(true);
     };
 
-    // Închide modalul fără să facă nicio modificare
+    // Close the modal without making changes
     const handleCloseModal = () => {
         setOpen(false);
     };
 
-    // Definește coloanele pentru afișarea datelor utilizatorilor într-un tabel
+    // Define columns for the data grid
     const columns = [
         { field: 'email', headerName: 'Email', width: 550 },
         {
@@ -86,14 +72,14 @@ function AllUsers() {
         },
     ];
 
-    // Stilizează butonul pe baza rutei active
+    // Style the active button based on the current route
     const buttonStyle = (path) => ({
-        backgroundColor: activeButton === path ? '#1976d2' : 'transparent', // Fundalul butonului activ
-        color: activeButton === path ? '#ffffff' : '#000000', // Textul butonului activ (alb) sau negru
-        border: '1px solid #1976d2', // Conturul butonului
+        backgroundColor: activeButton === path ? '#1976d2' : 'transparent',
+        color: activeButton === path ? '#ffffff' : '#000000',
+        border: '1px solid #1976d2',
         '&:hover': {
-            backgroundColor: activeButton === path ? '#1565c0' : 'rgba(0, 0, 0, 0.1)', // Fundal la hover
-            color: activeButton === path ? '#ffffff' : '#000000', // Textul la hover
+            backgroundColor: activeButton === path ? '#1565c0' : 'rgba(0, 0, 0, 0.1)',
+            color: activeButton === path ? '#ffffff' : '#000000',
         }
     });
 
@@ -108,23 +94,21 @@ function AllUsers() {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    // filter: 'blur(0px)', // Efectul de blur
-                    zIndex: -1, // Asigură că imaginea este în spate
-                    opacity: 0.95, // Aplica un nivel de transparență
+                    zIndex: -1,
+                    opacity: 0.95,
                 }}
             />
-
             <Header />
             <Toolbar>
-                < Button
+                <Button
                     color="inherit"
                     component={Link}
                     to="/all-flats"
                     sx={{
                         ...buttonStyle('/all-flats'),
-                        border: 'none', // Elimină border-ul
-                        padding: 0,     // Opțional: elimină padding-ul pentru a face butonul să fie doar text
-                        textTransform: 'none', // Opțional: menține textul în forma originală (fără uppercase)
+                        border: 'none',
+                        padding: 0,
+                        textTransform: 'none',
                     }}
                     onClick={() => setActiveButton('/all-flats')}
                 >
@@ -139,7 +123,6 @@ function AllUsers() {
                         border: 'none',
                         padding: 0,
                         textTransform: 'none',
-
                     }}
                     onClick={() => setActiveButton('/my-flats')}
                 >
@@ -166,9 +149,7 @@ function AllUsers() {
                     sx={{
                         ...buttonStyle('/add-flat'),
                         border: 'none',
-                        border: 0,
                         textTransform: 'none',
-
                     }}
                     onClick={() => setActiveButton('/add-flat')}
                 >
@@ -176,10 +157,8 @@ function AllUsers() {
                 </Button>
             </Toolbar>
             <Box sx={{ height: 400, width: '100%', marginTop: 2, }}>
-                <TableContainer >
-
+                <TableContainer>
                     <DataGrid
-
                         rows={users}
                         columns={columns}
                         pageSize={10}
@@ -187,7 +166,7 @@ function AllUsers() {
                         disableSelectionOnClick
                         autoHeight
                         sx={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.5)', // Fundal semi-transparent (alb cu 70% opacitate)
+                            backgroundColor: 'rgba(255, 255, 255, 0.5)', // Semi-transparent background
                         }}
                         sortModel={[
                             {
@@ -195,12 +174,11 @@ function AllUsers() {
                                 sort: 'asc',
                             },
                         ]}
-
                     />
                 </TableContainer>
             </Box>
 
-            {/* Modal de confirmare ștergere */}
+            {/* Confirmation Dialog */}
             <Dialog
                 open={open}
                 onClose={handleCloseModal}
@@ -225,4 +203,3 @@ function AllUsers() {
 }
 
 export default AllUsers;
-

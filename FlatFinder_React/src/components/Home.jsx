@@ -3,84 +3,75 @@ import { Button, Toolbar, AppBar } from "@mui/material";
 import { useAuth } from "../contexts/authContext";
 import { useNavigate, Outlet, Link, useLocation } from "react-router-dom";
 import Header from "./Header";
-import { db } from "../firebase";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import axios from 'axios';
 import AllFlats from "./AllFlats";
 import backgroundImage from '../assets/ny1.jpg';
 
-
-
-
 function Home() {
-    const navigate = useNavigate();//navigarea programatică între rute
-    const { currentUser } = useAuth();//returnează informații despre utilizatorul curent
-    const location = useLocation(); // Obține locația curentă a paginii
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const location = useLocation();
 
-    const [isAdmin, setIsAdmin] = useState(false);// indică dacă utilizatorul curent este administrator
-    const [showAllFlats, setShowAllFlats] = useState(true); // Controlează vizibilitatea componentei AllFlats
-    const [activeButton, setActiveButton] = useState(location.pathname); // Starea pentru butonul activ
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [showAllFlats, setShowAllFlats] = useState(true);
+    const [activeButton, setActiveButton] = useState(location.pathname);
+    const [users, setUsers] = useState([]);  // Variabila pentru lista de utilizatori
 
-
-    //Se execută doar o dată (când componenta se montează) datorită dependenței goale [].
+    // UseEffect pentru a verifica utilizatorul și pentru a încărca utilizatorii din MongoDB
     useEffect(() => {
-        if (!currentUser) {//Dacă utilizatorul nu este autentificat, se redirecționează la pagina de autentificare.
+        if (!currentUser) {
             navigate('/login');
         } else {
-            checkAdminStatus();// Funcții care se apelează dacă utilizatorul este autentificat.
-            fetchUsers();// Funcții care se apelează dacă utilizatorul este autentificat.
+            checkAdminStatus();
+            fetchUsers();  // Preluăm utilizatorii din MongoDB
         }
     }, []);
 
-
-    //: Se execută de fiecare dată când location se schimbă.
     useEffect(() => {
-
-        if (location.pathname === '/') {  // Actualizare vizibilitate AllFlats: Dacă ruta curentă este /, atunci AllFlats este vizibilă, altfel nu.
+        if (location.pathname === '/') {
             setShowAllFlats(true);
         } else {
             setShowAllFlats(false);
         }
 
-        // Actualizează butonul activ în funcție de locație
         setActiveButton(location.pathname);
     }, [location]);
 
-
-    // Preia lista utilizatorilor din colecția users din baza de date și o stochează într-o variabilă.
+    // Funcție pentru a obține utilizatorii din MongoDB
     const fetchUsers = async () => {
-        const usersCollection = collection(db, "users");
-        const usersSnapshot = await getDocs(usersCollection);
-        const usersList = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        try {
+            const response = await axios.get('http://localhost:5000/api/users');
+            setUsers(response.data);  // Salvează utilizatorii în state
+        } catch (error) {
+            console.error('Eroare la obținerea utilizatorilor:', error);
+        }
     };
 
-
-    //Verifică dacă utilizatorul curent este administrator și actualizează starea isAdmin în funcție de aceasta.
+    // Verifică dacă utilizatorul curent este administrator
     const checkAdminStatus = async () => {
         if (currentUser) {
-            const userDoc = doc(db, "users", currentUser.uid);
-            const userSnapshot = await getDoc(userDoc);
-            const userData = userSnapshot.data();
-            if (userData) {
-                setIsAdmin(userData.isAdmin);
+            try {
+                const response = await axios.get(`http://localhost:5000/api/users/${currentUser.uid}`);
+                setIsAdmin(response.data.isAdmin);
+            } catch (error) {
+                console.error('Eroare la verificarea statutului administratorului:', error);
             }
         }
     };
 
-
-    // Funcție care returnează stilurile pentru butoane, bazate pe ruta curentă (path)
+    // Funcție pentru stilizarea butoanelor
     const buttonStyle = (path) => ({
-        backgroundColor: activeButton === path ? '#1976d2' : 'transparent', // Fundalul butonului activ
-        color: activeButton === path ? '#ffffff' : '#000000', // Textul butonului activ (alb) sau negru
-        border: '1px solid #1976d2', // Conturul butonului
+        backgroundColor: activeButton === path ? '#1976d2' : 'transparent',
+        color: activeButton === path ? '#ffffff' : '#000000',
+        border: '1px solid #1976d2',
         '&:hover': {
-            backgroundColor: activeButton === path ? '#1565c0' : 'rgba(0, 0, 0, 0.1)', // Fundal la hover
-            color: activeButton === path ? '#ffffff' : '#000000', // Textul la hover
+            backgroundColor: activeButton === path ? '#1565c0' : 'rgba(0, 0, 0, 0.1)',
+            color: activeButton === path ? '#ffffff' : '#000000',
         }
     });
 
     return (
         <div>
-
             <img
                 src={backgroundImage}
                 alt="background"
@@ -90,10 +81,8 @@ function Home() {
                     left: 0,
                     width: '100%',
                     height: '100%',
-        
-                    zIndex: -1, // Asigură că imaginea este în spate
-                    opacity: 0.95, // Aplica un nivel de transparență
-                    
+                    zIndex: -1,
+                    opacity: 0.95,
                 }}
             />
 
@@ -107,15 +96,15 @@ function Home() {
                 }}
             >
                 <Toolbar>
-                    < Button
+                    <Button
                         color="inherit"
                         component={Link}
                         to="/all-flats"
                         sx={{
                             ...buttonStyle('/all-flats'),
-                            border: 'none', // Elimină border-ul
-                            padding: 0,     // Opțional: elimină padding-ul pentru a face butonul să fie doar text
-                            textTransform: 'none', // Opțional: menține textul în forma originală (fără uppercase)
+                            border: 'none',
+                            padding: 0,
+                            textTransform: 'none',
                         }}
                         onClick={() => setActiveButton('/all-flats')}
                     >
@@ -130,7 +119,6 @@ function Home() {
                             border: 'none',
                             padding: 0,
                             textTransform: 'none',
-
                         }}
                         onClick={() => setActiveButton('/my-flats')}
                     >
@@ -157,9 +145,7 @@ function Home() {
                         sx={{
                             ...buttonStyle('/add-flat'),
                             border: 'none',
-                            border: 0,
                             textTransform: 'none',
-
                         }}
                         onClick={() => setActiveButton('/add-flat')}
                     >
@@ -170,13 +156,9 @@ function Home() {
             <div style={{ padding: '20px' }}>
                 <Outlet />
             </div>
-            {showAllFlats && <AllFlats />} {/* Afișează AllFlats doar dacă showAllFlats este true */}
-        </div >
+            {showAllFlats && <AllFlats />}
+        </div>
     );
 }
 
 export default Home;
-
-
-
-
