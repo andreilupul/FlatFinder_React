@@ -1,6 +1,7 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+// import bodyParser from'body-parser';
 
 // Define MongoDB schemas for Flats and Users
 const flatSchema = new mongoose.Schema({
@@ -174,6 +175,7 @@ app.delete('/api/users/:userId/favorites/:flatId', async (req, res) => {
         res.status(500).json({ message: 'Error removing from favorites', error });
     }
 });
+
 
 // --------------------- Start Server ---------------------
 
